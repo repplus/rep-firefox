@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repeater Panel</title>
+    <link rel="stylesheet" href="css/panel.css">
+    <link rel="stylesheet" href="css/json-viewer.css">
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="css/github-dark.min.css" id="hljs-style">
+    <script src="lib/highlight.min.js"></script>
+</head>
+
+<body>
+    <!-- Promotional Banner -->
+    <div id="promo-banner" class="promo-banner">
+        <div class="promo-content">
+            <span>⭐ Give rep+ a star on <a href="https://github.com/bscript/rep" target="_blank">GitHub</a> and consider
+                <a href="https://github.com/sponsors/bscript" target="_blank">sponsoring</a> on GitHub or
+                <a href="https://opencollective.com/rep" target="_blank">Open Collective</a>!</span>
+        </div>
+        <button id="close-banner" class="close-banner" title="Dismiss">×</button>
+    </div>
+
+    <div class="container">
+        <!-- Left Sidebar: Request List -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="search-container">
+                    <!-- Primary Actions: Search and Most Used Buttons -->
+                    <div class="search-input-wrapper">
+                        <input type="text" id="search-bar" placeholder="Filter requests...">
+                        <button id="regex-toggle" class="regex-toggle-inline" title="Toggle Regex Mode">
+                            <span class="regex-icon">.*</span>
+                        </button>
+                    </div>
+                    <div class="primary-actions">
+                        <button id="remove-duplicates-btn" class="icon-btn" title="Remove duplicate requests (enabled by default)">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+                            </svg>
+                        </button>
+                        <button id="clear-all-btn" class="icon-btn" title="Clear all requests">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="pointer-events: none;">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                            </svg>
+                        </button>
+                        <button id="toggle-groups-btn" class="icon-btn" title="Collapse/Expand All Groups">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                <path
+                                    d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z" />
+                            </svg>
+                        </button>
+                        <button id="llm-chat-toggle-btn" class="icon-btn ai-icon-btn" title="Rep+ AI Assistance">
+                            <svg class="ai-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <circle cx="9" cy="9" r="1" fill="currentColor"/>
+                                <circle cx="15" cy="9" r="1" fill="currentColor"/>
+                                <path d="M9 13c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle class="ai-sparkle ai-sparkle-1" cx="4" cy="6" r="0.8" fill="currentColor"/>
+                                <circle class="ai-sparkle ai-sparkle-2" cx="20" cy="8" r="0.8" fill="currentColor"/>
+                                <circle class="ai-sparkle ai-sparkle-3" cx="6" cy="18" r="0.8" fill="currentColor"/>
+                                <circle class="ai-sparkle ai-sparkle-4" cx="18" cy="20" r="0.8" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <button id="toggle-sidebar-btn" class="icon-btn" title="Hide sidebar">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                <path d="M4 4h4v16H4V4zm5 0h11v2H9V4zm0 6h11v2H9v-2zm0 6h11v2H9v-2z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Secondary Actions: More Menu -->
+                    <div class="more-menu-wrapper">
+                        <button id="more-menu-btn" class="icon-btn more-menu-btn" title="More options">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                        </button>
+                        <div id="more-menu" class="more-menu hidden">
+                            <button id="settings-btn" class="more-menu-item">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path
+                                        d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m9 0a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>Settings</span>
+                            </button>
+                            <button id="import-btn" class="more-menu-item">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor" />
+                                </svg>
+                                <span>Import</span>
+                            </button>
+                            <button id="export-btn" class="more-menu-item">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" fill="currentColor" />
+                                </svg>
+                                <span>Export</span>
+                            </button>
+                            <button id="extractor-btn" class="more-menu-item" title="Extract secrets, endpoints, parameters, and search responses">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path
+                                        d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"
+                                        fill="currentColor" />
+                                </svg>
+                                <span>Extractor</span>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" id="import-file" accept=".json" style="display: none;">
+                </div>
+                <div class="filters">
+                    <div class="method-filter" id="method-filter">
+                        <button id="method-filter-btn" class="filter-btn method-filter-btn" title="Filter by method">
+                            <span id="method-filter-label">All</span>
+                            <span class="method-caret">▾</span>
+                        </button>
+                        <div id="method-filter-menu" class="method-filter-menu">
+                            <div class="method-filter-actions">
+                                <button class="method-filter-action-btn" id="method-select-all">Select all</button>
+                                <button class="method-filter-action-btn" id="method-clear-all">Clear all</button>
+                            </div>
+                            <div class="method-filter-divider"></div>
+                            <div class="method-filter-item" data-filter="GET">
+                                <input type="checkbox" class="method-checkbox" data-filter="GET">
+                                <span>GET</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="POST">
+                                <input type="checkbox" class="method-checkbox" data-filter="POST">
+                                <span>POST</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="PUT">
+                                <input type="checkbox" class="method-checkbox" data-filter="PUT">
+                                <span>PUT</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="DELETE">
+                                <input type="checkbox" class="method-checkbox" data-filter="DELETE">
+                                <span>DELETE</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="PATCH">
+                                <input type="checkbox" class="method-checkbox" data-filter="PATCH">
+                                <span>PATCH</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="HEAD">
+                                <input type="checkbox" class="method-checkbox" data-filter="HEAD">
+                                <span>HEAD</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="OPTIONS">
+                                <input type="checkbox" class="method-checkbox" data-filter="OPTIONS">
+                                <span>OPTIONS</span>
+                            </div>
+                            <div class="method-filter-item" data-filter="TRACE">
+                                <input type="checkbox" class="method-checkbox" data-filter="TRACE">
+                                <span>TRACE</span>
+                            </div>
+                            <div class="method-filter-divider"></div>
+                            <div class="method-filter-item" data-filter="XHR"
+                                title="Show only XHR/Fetch requests (exclude images, fonts, text files)">
+                                <input type="checkbox" class="method-checkbox" data-filter="XHR">
+                                <span>XHR/Fetch</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="color-filter-btn" class="filter-btn" title="Filter by Color">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <path
+                                d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                        </svg>
+                    </button>
+                    <button class="filter-btn" data-filter="starred" title="Show Starred">★</button>
+                    <div class="divider-vertical"
+                        style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
+                    <button id="block-toggle-btn" class="icon-btn block-toggle-btn" title="Block incoming requests" aria-label="Block incoming requests">
+                        <svg class="block-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5h3v14H8zm5 0h3v14h-3z"/></svg>
+                    </button>
+                    <div class="forward-combo" id="forward-combo">
+                        <button id="forward-btn" class="icon-btn forward-combo-btn" title="Forward blocked requests">
+                            <span class="forward-label">Forward (0)</span>
+                            <span class="forward-caret" data-caret>▾</span>
+                        </button>
+                        <div id="forward-menu" class="forward-menu">
+                            <div class="forward-menu-item active" data-mode="next">Forward next</div>
+                            <div class="forward-menu-item" data-mode="all">Forward all</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div id="request-list" class="request-list">
+                <!-- Requests will be populated here -->
+                <div class="empty-state">Listening for requests...</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Resize Handle -->
+        <div class="resize-handle sidebar-resize-handle"></div>
+
+        <!-- Main Content: Vertical Split (Top: Request/Response, Bottom: Bulk Replay) -->
+        <div class="main-content">
+            <!-- Top Section: Request/Response Split View -->
+            <div class="split-view-container">
+                <!-- Request Editor (Top/Left) -->
+                <div class="pane request-pane">
+                    <div class="pane-header">
+                        <h3>Request</h3>
+                        <div class="header-actions">
+                            <button id="show-sidebar-btn" class="icon-btn show-sidebar-btn" title="Show sidebar" aria-label="Show sidebar" style="display: none;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path d="M3 4h4v16H3V4zm5 0h16v2H8V4zm0 6h16v2H8v-2zm0 6h16v2H8v-2z" />
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu-container">
+                                <button id="ai-menu-btn" class="icon-btn" title="AI Actions">
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path
+                                            d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    <span style="font-size: 10px; margin-left: 2px;">▼</span>
+                                </button>
+                                <div id="ai-menu-dropdown" class="dropdown-content">
+                                    <div class="dropdown-item" id="explain-btn">
+                                        <span>✨ Explain Request</span>
+                                    </div>
+                                    <div class="dropdown-item" id="suggest-attack-btn">
+                                        <span>🎯 Suggest Attack Vectors</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="bulk-replay-btn" class="icon-btn"
+                                title="Bulk Replay - Mark parameters with § to start attack" disabled>
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path d="M7 2v11h3v9l7-12h-4l4-8z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <div class="divider-vertical"
+                                style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
+                            <div class="history-nav">
+                                <button id="undo-btn" class="icon-btn" title="Undo (Ctrl/Cmd+Z)" disabled>
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.96-.7 2.8l1.46 1.46A7.932 7.932 0 0020 13c0-4.42-3.58-8-8-8z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <button id="redo-btn" class="icon-btn" title="Redo (Ctrl/Cmd+Y or Shift+Z)" disabled>
+                                    <svg viewBox="0 0 24 24" width="16" height="16">
+                                        <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6 0 1.01.25 1.96.7 2.8L5.24 17.26A7.932 7.932 0 014 13c0-4.42 3.58-8 8-8z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <label class="https-toggle">
+                                <input type="checkbox" id="use-https" checked>
+                                <span>HTTPS</span>
+                            </label>
+                            <button id="copy-req-btn" class="icon-btn" title="Copy Request">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path
+                                        d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                                        fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button id="layout-toggle-btn" class="icon-btn" title="Toggle Layout (Horizontal/Vertical)">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path d="M3 5v14h18V5H3zm16 12h-6V7h6v10zm-8 0H5V7h6v10z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button id="send-btn" class="primary-btn">Send</button>
+                        </div>
+                    </div>
+                    <div class="pane-tabs">
+                        <button class="view-tab active" data-view="pretty" data-pane="request">Pretty</button>
+                        <button class="view-tab" data-view="raw" data-pane="request">Raw</button>
+                        <button class="view-tab" data-view="hex" data-pane="request">Hex</button>
+                    </div>
+                    <div class="pane-body">
+                        <div class="editor-container">
+                            <div id="req-view-pretty" class="view-content active">
+                                <div id="raw-request-input" contenteditable="true" class="editor" spellcheck="false">
+                                </div>
+                            </div>
+                            <div id="req-view-raw" class="view-content" style="display: none;">
+                                <textarea id="raw-request-textarea" class="editor raw-editor"
+                                    spellcheck="false"></textarea>
+                            </div>
+                            <div id="req-view-hex" class="view-content" style="display: none;">
+                                <pre id="req-hex-display" class="hex-display"></pre>
+                            </div>
+                        </div>
+                        <div class="search-bar-container">
+                            <input type="text" id="request-search" class="search-input"
+                                placeholder="Search in request...">
+                            <button id="request-search-prev" class="search-nav-btn" title="Previous match" disabled>
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button id="request-search-next" class="search-nav-btn" title="Next match" disabled>
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <span id="request-search-count" class="search-count"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resize Handle (Horizontal) -->
+                <div class="resize-handle pane-resize-handle"></div>
+
+                <!-- Response Viewer (Bottom/Right) -->
+                <div class="pane response-pane">
+                    <div class="pane-header">
+                        <h3>Response</h3>
+                        <div class="header-actions">
+                            <div class="header-badges">
+                                <span id="res-status" class="status-badge"></span>
+                                <span id="res-time" class="time-badge"></span>
+                                <span id="res-size" class="size-badge"></span>
+                            </div>
+                            <label class="diff-toggle"
+                                style="display: none; margin-left: 10px; font-size: 12px; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="show-diff">
+                                <span>Diff View</span>
+                            </label>
+                            <button id="toggle-objects-btn" class="icon-btn" title="Collapse/Expand All Objects">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                    <path
+                                        d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z" />
+                                </svg>
+                            </button>
+                            <button id="copy-res-btn" class="icon-btn" title="Copy Response">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path
+                                        d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                                        fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button id="screenshot-btn" class="icon-btn" title="Screenshot Request/Response">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path
+                                        d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"
+                                        fill="currentColor" />
+                                </svg>
+                            </button>
+                            <div class="divider-vertical"
+                                style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
+                            <button id="multi-tab-btn" class="icon-btn" title="Enable Multi-tab Capture">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                                        fill="currentColor" />
+                                </svg>
+                            </button>
+                            <div class="theme-selector-wrapper">
+                                <button id="theme-selector-btn" class="icon-btn" title="Select Theme">
+                                    <svg viewBox="0 0 24 24" width="14" height="14">
+                                        <path
+                                            d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <div id="theme-menu" class="theme-menu">
+                                    <div class="theme-menu-item" data-theme="dark">🌙 Dark (Default)</div>
+                                    <div class="theme-menu-item" data-theme="light">☀️ Light</div>
+                                    <div class="theme-menu-item" data-theme="modern-dark">🎨 Modern Dark</div>
+                                    <div class="theme-menu-item" data-theme="modern-light">✨ Modern Light</div>
+                                    <div class="theme-menu-item" data-theme="blue">💙 Blue</div>
+                                    <div class="theme-menu-item" data-theme="high-contrast">🔆 High Contrast</div>
+                                    <div class="theme-menu-item" data-theme="terminal">🖥️ Terminal</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pane-tabs">
+                        <button class="view-tab active" data-view="pretty" data-pane="response">Pretty</button>
+                        <button class="view-tab" data-view="raw" data-pane="response">Raw</button>
+                        <button class="view-tab" data-view="hex" data-pane="response">Hex</button>
+                        <button class="view-tab" data-view="json" data-pane="response">Json</button>
+                        <button class="view-tab" data-view="preview" data-pane="response">Preview</button>
+                    </div>
+                    <div class="pane-body">
+                        <div class="editor-container">
+                            <div id="res-view-pretty" class="view-content active">
+                                <pre id="raw-response-display"></pre>
+                            </div>
+                            <div id="res-view-raw" class="view-content" style="display: none;">
+                                <pre id="raw-response-text" class="editor raw-editor"></pre>
+                            </div>
+                            <div id="res-view-hex" class="view-content" style="display: none;">
+                                <pre id="res-hex-display" class="hex-display"></pre>
+                            </div>
+                            <div id="res-view-json" class="view-content" style="display: none;">
+                                <div class="json-warning-bar" style="display: none;">
+                                    <span class="json-warning-icon">⚠️</span>
+                                    <span class="json-warning-text">Not a valid JSON - showing raw body</span>
+                                </div>
+                                <pre id="res-json-display" class="json-display"></pre>
+                            </div>
+                            <div id="res-view-preview" class="view-content" style="display: none;">
+                                <div class="preview-controls" style="padding: 8px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px;">
+                                        <input type="checkbox" id="preview-allow-scripts" style="margin: 0;">
+                                        <span>Allow Scripts</span>
+                                    </label>
+                                    <span style="font-size: 11px; color: var(--text-secondary);">⚠️ Enabling scripts may pose security risks</span>
+                                    <span style="font-size: 10px; color: var(--text-secondary); margin-left: auto;">Note: Console warnings are expected for sandboxed content</span>
+                                </div>
+                                <iframe id="response-preview-iframe" sandbox="allow-forms allow-same-origin" style="width: 100%; height: 100%; border: none; background: white;"></iframe>
+                            </div>
+                        </div>
+                        <div class="search-bar-container">
+                            <input type="text" id="response-search" class="search-input"
+                                placeholder="Search in response...">
+                            <button id="response-search-prev" class="search-nav-btn" title="Previous match" disabled>
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button id="response-search-next" class="search-nav-btn" title="Next match" disabled>
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <span id="response-search-count" class="search-count"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resize Handle (between Response and Chat) -->
+                <div class="resize-handle pane-resize-handle chat-resize-handle"></div>
+
+                <!-- LLM Chat Pane (Right) -->
+                <div id="llm-chat-pane" class="pane llm-chat-pane" style="flex-direction: column;">
+                    <div class="pane-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h3>Rep+ AI Assistance</h3>
+                            <span id="llm-chat-request-badge" class="llm-chat-request-badge" style="display: none;"></span>
+                            <span id="llm-chat-token-estimate" class="llm-chat-token-estimate" style="display: none;"></span>
+                        </div>
+                        <div class="header-actions">
+                            <button id="llm-chat-close-btn" class="icon-btn" title="Close Chat">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="pane-body llm-chat-body">
+                        <div id="llm-chat-reference-container" class="llm-chat-reference-container" style="display: none;">
+                            <div class="llm-chat-reference-header">
+                                <button id="llm-chat-reference-toggle" class="llm-chat-reference-toggle" title="Toggle reference list">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                        <path d="M7 10l5 5 5-5z"/>
+                                    </svg>
+                                </button>
+                                <span>🔗 Reference previous requests:</span>
+                            </div>
+                            <div class="llm-chat-reference-checkboxes"></div>
+                        </div>
+                        <div id="llm-chat-messages" class="llm-chat-messages"></div>
+                        <div class="llm-chat-input-container">
+                            <div class="llm-chat-input-wrapper">
+                                <textarea id="llm-chat-input" class="llm-chat-input" placeholder="Ask me anything about the selected request..." rows="1"></textarea>
+                                <button id="llm-chat-send-btn" class="llm-chat-send-btn" title="Send message (Enter)" type="button">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="llm-chat-disclaimer">Rep+ can make mistakes. Check important info.</div>
+                            <button id="llm-chat-clear-btn" class="llm-chat-clear-btn" title="Clear conversation">Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resize Handle (Vertical) -->
+            <div class="vertical-resize-handle" style="display: none;"></div>
+
+            <!-- Bulk Replay Pane (Bottom) -->
+            <div id="bulk-replay-pane" class="pane bulk-replay-pane" style="display: none;">
+                <div class="pane-header">
+                    <h3>Bulk Replay Results</h3>
+                    <div class="header-actions">
+                        <div class="progress-container">
+                            <div id="bulk-progress-bar" class="progress-bar"></div>
+                            <span id="bulk-progress-text">0/0</span>
+                        </div>
+                        <button id="bulk-stop-btn" class="icon-btn" title="Pause Attack">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button id="bulk-close-btn" class="icon-btn" title="Close">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path
+                                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                                    fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="pane-body">
+                    <div class="table-container">
+                        <table id="bulk-results-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Payload</th>
+                                    <th>Status</th>
+                                    <th>Size</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Results -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu for Encode/Decode -->
+    <div id="context-menu" class="context-menu">
+        <div class="context-menu-item" id="ctx-explain-ai">
+            <span>✨ Explain with AI</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item has-submenu">
+            <span>Convert</span>
+            <span class="submenu-arrow">▶</span>
+            <div class="context-submenu">
+                <div class="context-submenu-group">
+                    <div class="context-submenu-header">URL</div>
+                    <div class="context-menu-item" data-action="url-decode">URL Decode</div>
+                    <div class="context-menu-item" data-action="url-encode-key">URL Encode (Key Char)</div>
+                    <div class="context-menu-item" data-action="url-encode-all">URL Encode (All Char)</div>
+                    <div class="context-menu-item" data-action="url-encode-unicode">URL Encode (All Char Unicode)</div>
+                </div>
+                <div class="context-submenu-separator"></div>
+                <div class="context-submenu-group">
+                    <div class="context-submenu-header">Base64</div>
+                    <div class="context-menu-item" data-action="base64-decode">Base64 Decode</div>
+                    <div class="context-menu-item" data-action="base64-encode">Base64 Encode</div>
+                </div>
+                <div class="context-submenu-separator"></div>
+                <div class="context-submenu-group">
+                    <div class="context-submenu-header">JWT</div>
+                    <div class="context-menu-item" data-action="jwt-decode">JWT Decode</div>
+                </div>
+            </div>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item has-submenu" id="ctx-copy-as-group">
+            <span>Copy as</span>
+            <span class="submenu-arrow">▶</span>
+            <div class="context-submenu">
+                <div class="context-menu-item" data-action="copy-as-curl" data-requires-full-selection="true">
+                    cURL
+                </div>
+                <div class="context-menu-item" data-action="copy-as-bash" data-requires-full-selection="true">
+                    PowerShell
+                </div>
+                <div class="context-menu-item" data-action="copy-as-python" data-requires-full-selection="true">
+                    Python (requests)
+                </div>
+                <div class="context-menu-item" data-action="copy-as-fetch" data-requires-full-selection="true">
+                    JavaScript fetch
+                </div>
+            </div>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="mark-payload">Mark Payload (§)</div>
+    </div>
+
+    <!-- Bulk Replay Configuration Modal -->
+    <div id="bulk-config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Bulk Replay Configuration</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Attack Type Selection -->
+                <div class="form-group">
+                    <label>Attack Type</label>
+                    <select id="attack-type" class="form-control">
+                        <option value="sniper">Sniper - One position at a time</option>
+                        <option value="battering-ram">Battering Ram - Same payload for all positions</option>
+                        <option value="pitchfork">Pitchfork - Zip payloads across positions</option>
+                        <option value="cluster-bomb">Cluster Bomb - All combinations</option>
+                    </select>
+                    <p class="help-text" id="attack-type-help">Sniper: Tests each position independently with its own
+                        payloads.</p>
+                </div>
+
+                <!-- Payload Positions -->
+                <div class="form-group">
+                    <label>Payload Positions Found: <span id="payload-count">0</span></label>
+                    <div id="positions-container">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Battering Ram: Single Shared Payload -->
+                <div id="battering-ram-config" style="display: none;">
+                    <div class="form-group">
+                        <label>Shared Payload Configuration</label>
+                        <select class="payload-type-select form-control">
+                            <option value="simple-list">Simple List</option>
+                            <option value="numbers">Numbers</option>
+                        </select>
+                    </div>
+
+                    <div class="payload-options-simple-list">
+                        <div class="form-group">
+                            <label>Payloads (one per line)</label>
+                            <textarea class="payload-list-input form-control" rows="8"
+                                placeholder="admin&#10;user&#10;guest"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="payload-options-numbers" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>From</label>
+                                <input type="number" class="num-from-input form-control" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label>To</label>
+                                <input type="number" class="num-to-input form-control" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Step</label>
+                                <input type="number" class="num-step-input form-control" value="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="start-attack-btn" class="primary-btn">Start Attack</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="ai-provider">AI Provider</label>
+                    <select id="ai-provider" class="form-control">
+                        <option value="anthropic">Anthropic (Claude)</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="local">Local Model (Ollama)</option>
+                    </select>
+                </div>
+                <div id="anthropic-settings" class="provider-settings">
+                    <div class="form-group">
+                        <label for="anthropic-api-key">Anthropic API Key</label>
+                        <input type="password" id="anthropic-api-key" class="form-control" placeholder="sk-ant-...">
+                        <p class="help-text">API key is stored locally in your browser and never sent anywhere else.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="anthropic-model">Model</label>
+                        <select id="anthropic-model" class="form-control">
+                            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Oct 2024)</option>
+                            <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (Jun 2024)</option>
+                            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                            <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="gemini-settings" class="provider-settings" style="display: none;">
+                    <div class="form-group">
+                        <label for="gemini-api-key">Gemini API Key</label>
+                        <input type="password" id="gemini-api-key" class="form-control" placeholder="AIza...">
+                        <p class="help-text">Get your API key from Google AI Studio. Stored locally.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="gemini-model">Model</label>
+                        <select id="gemini-model" class="form-control">
+                            <option value="gemini-3-pro-preview">Gemini 3 Preview</option>
+                            <option value="gemini-2-5-pro">Gemini 2.5 Pro</option>
+                            <option value="gemini-flash-latest">Gemini Flash (Latest)</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="local-settings" class="provider-settings" style="display: none;">
+                    <div class="form-group">
+                        <label for="local-api-url">API URL</label>
+                        <input type="text" id="local-api-url" class="form-control" placeholder="http://localhost:11434/api/generate">
+                        <p class="help-text">URL endpoint for your local model API (e.g., Ollama). Stored locally.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="local-model">Model Name</label>
+                        <input type="text" id="local-model" class="form-control" placeholder="gemma3:4b">
+                        <p class="help-text">Name of the local model to use.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="primary-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explanation Modal -->
+    <div id="explanation-modal" class="modal">
+        <div class="modal-content" style="min-width: 600px; width: 60%;">
+            <div class="modal-header">
+                <h3>Request Explanation</h3>
+                <div style="position: relative; display: flex; align-items: center; margin-left: auto;">
+                    <button id="ai-export-toggle" class="secondary-btn" title="Export AI output" style="display: flex; align-items: center; gap: 6px;">
+                        <span>📤 Export</span>
+                        <span style="font-size: 11px;">▼</span>
+                    </button>
+                    <div id="ai-export-menu" style="display: none; position: absolute; top: 32px; right: 0; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 170px; z-index: 50;">
+                        <button id="ai-export-md-item" class="menu-item" style="width: 100%; text-align: left; padding: 8px 12px; background: transparent; border: none; color: var(--text-color); display: flex; gap: 8px; align-items: center;">📝 Export as Markdown</button>
+                        <button id="ai-export-pdf-item" class="menu-item" style="width: 100%; text-align: left; padding: 8px 12px; background: transparent; border: none; color: var(--text-color); display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--border-color);">🖨️ Export as PDF</button>
+                    </div>
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="explanation-content" class="markdown-body" style="line-height: 1.6; font-size: 14px;">
+                    <!-- Content populated by JS -->
+                    <div class="loading-spinner">Generating explanation...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extractor Modal -->
+    <div id="extractor-modal" class="modal">
+        <div class="modal-content" style="width: 1200px; max-width: 95vw;">
+            <div class="modal-header">
+                <div class="extractor-tabs">
+                    <button class="extractor-tab active" data-tab="secrets">Secrets</button>
+                    <button class="extractor-tab" data-tab="endpoints">Endpoints</button>
+                    <button class="extractor-tab" data-tab="parameters">Parameters</button>
+                    <button class="extractor-tab" data-tab="response-search">Response Search</button>
+                </div>
+                <div id="domain-filter-container" style="margin: 0 10px; display: none;">
+                    <select id="domain-filter" class="domain-filter-select">
+                        <option value="all">All Domains</option>
+                    </select>
+                </div>
+                <div id="extractor-search-container" style="flex: 1; margin: 0 20px; display: none;">
+                    <input type="text" id="extractor-search" class="search-input" placeholder="Search..."
+                        style="width: 100%;">
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="extractor-progress" style="display: none; margin-bottom: 15px;">
+                    <div class="progress-container" style="width: 100%;">
+                        <div class="progress-bar" id="extractor-progress-bar"></div>
+                        <span id="extractor-progress-text">Scanning...</span>
+                    </div>
+                    <div id="scan-steps" class="scan-steps" style="margin-top: 12px; display: none;">
+                        <div class="scan-step" data-step="secrets">
+                            <span class="step-icon">○</span>
+                            <span class="step-text">Scanning for secrets</span>
+                        </div>
+                        <div class="scan-step" data-step="endpoints">
+                            <span class="step-icon">○</span>
+                            <span class="step-text">Extracting endpoints</span>
+                        </div>
+                        <div class="scan-step" data-step="parameters">
+                            <span class="step-icon">○</span>
+                            <span class="step-text">Extracting parameters</span>
+                        </div>
+                        <div class="scan-step" data-step="processing">
+                            <span class="step-icon">○</span>
+                            <span class="step-text">Processing results</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secrets Tab Content -->
+                <div id="tab-secrets" class="tab-content active">
+                    <div id="secrets-results">
+                        <div class="empty-state">No secrets found yet. Click "Scan" to start.</div>
+                    </div>
+                    <div id="secrets-pagination" class="pagination-container" style="display: none;"></div>
+                    <p class="disclaimer-text"
+                        style="margin-top: 15px; font-size: 11px; color: #888; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                        <strong>Note:</strong> Secret scanning only analyzes JavaScript files from the <strong>current inspected tab</strong>.
+                    </p>
+                    <p class="disclaimer-text"
+                        style="margin-top: 10px; font-size: 11px; color: #888;">
+                        <strong>Disclaimer:</strong> Automated scanning may produce false positives. Please manually
+                        verify all findings.
+                    </p>
+                </div>
+
+                <!-- Endpoints Tab Content -->
+                <div id="tab-endpoints" class="tab-content">
+                    <div id="endpoints-results">
+                        <div class="empty-state">No endpoints found yet. Click "Scan" to start.</div>
+                    </div>
+                    <div id="endpoints-pagination" class="pagination-container" style="display: none;"></div>
+                    <p class="disclaimer-text"
+                        style="margin-top: 15px; font-size: 11px; color: #888; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                        <strong>Note:</strong> Endpoint extraction uses pattern matching and may include some false
+                        positives. Endpoints are sorted by confidence level.
+                    </p>
+                </div>
+
+                <!-- Parameters Tab Content -->
+                <div id="tab-parameters" class="tab-content">
+                    <div id="parameters-results">
+                        <div class="empty-state">No parameters found yet. Click "Scan" to start.</div>
+                    </div>
+                    <div id="parameters-pagination" class="pagination-container" style="display: none;"></div>
+                    <p class="disclaimer-text"
+                        style="margin-top: 15px; font-size: 11px; color: #888; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                        <strong>Note:</strong> Parameter extraction only analyzes JavaScript files from the <strong>current inspected tab</strong>.
+                        Parameters are extracted from request bodies, query strings, headers, and path variables.
+                    </p>
+                    <p class="disclaimer-text"
+                        style="margin-top: 10px; font-size: 11px; color: #888;">
+                        <strong>Disclaimer:</strong> Automated extraction may produce false positives. High-risk parameters (role, admin, debug, etc.) are always shown regardless of confidence.
+                    </p>
+                </div>
+
+                <!-- Response Search Tab Content -->
+                <div id="tab-response-search" class="tab-content">
+                    <div class="search-controls"
+                        style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+                        <div class="search-input-wrapper" style="flex: 1;">
+                            <input type="text" id="response-search-input" placeholder="Search in responses...">
+                            <button id="response-search-ai-btn" class="ai-toggle-inline" title="Generate Regex with AI"
+                                style="right: 32px;">
+                                <span>✨</span>
+                            </button>
+                            <button id="response-search-regex-btn" class="regex-toggle-inline"
+                                title="Toggle Regex Mode">
+                                <span class="regex-icon">.*</span>
+                            </button>
+                        </div>
+                        <label class="checkbox-label" title="Fetch fresh responses by replaying requests"
+                            style="display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; font-size: 13px;">
+                            <input type="checkbox" id="response-search-fetch" checked>
+                            <span>Fetch Fresh</span>
+                        </label>
+                        <button id="response-search-btn" class="primary-btn" style="padding: 6px 16px;">Search</button>
+                    </div>
+
+                    <div id="response-search-results">
+                        <div class="empty-state">Enter a search term and click Search.</div>
+                    </div>
+                    <div id="response-search-pagination" class="pagination-container" style="display: none;"></div>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 15px; display: flex; justify-content: flex-end;">
+                    <button id="start-scan-btn" class="primary-btn">Start Scan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screenshot Editor Modal -->
+    <div id="screenshot-editor-modal" class="modal">
+        <div class="modal-content screenshot-editor-modal">
+            <div class="modal-header">
+                <h3>Screenshot Editor</h3>
+                <button class="close-modal" id="screenshot-editor-close">&times;</button>
+            </div>
+            <div class="modal-body screenshot-editor-body">
+                <div class="screenshot-tools">
+                    <button id="screenshot-tool-highlight" class="secondary-btn active" title="Highlight">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M3 17.25L17.81 2.44l3.75 3.75L6.75 21H3v-3.75z" fill="#FFD54F" />
+                            <path d="M5 19h2.25L17 9.25 14.75 7 5 16.75V19z" fill="#FBC02D" />
+                        </svg>
+                    </button>
+                    <button id="screenshot-tool-redact" class="secondary-btn" title="Redact">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <rect x="3" y="7" width="18" height="10" fill="currentColor" />
+                        </svg>
+                    </button>
+                    <button id="screenshot-tool-undo" class="secondary-btn" title="Undo">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.96-.7 2.8l1.46 1.46A7.932 7.932 0 0020 13c0-4.42-3.58-8-8-8z"
+                                fill="currentColor" />
+                        </svg>
+                    </button>
+                    <button id="screenshot-tool-redo" class="secondary-btn" title="Redo">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6 0 1.01.25 1.96.7 2.8L5.24 17.26A7.932 7.932 0 014 13c0-4.42 3.58-8 8-8z"
+                                fill="currentColor" />
+                        </svg>
+                    </button>
+                    <div class="screenshot-zoom-controls">
+                        <span class="zoom-label">Zoom:</span>
+                        <button id="screenshot-zoom-out" class="secondary-btn">-</button>
+                        <span id="screenshot-zoom-value" class="zoom-value">100%</span>
+                        <button id="screenshot-zoom-in" class="secondary-btn">+</button>
+                    </div>
+                </div>
+                <div class="screenshot-canvas-wrapper">
+                    <canvas id="screenshot-editor-canvas"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="screenshot-download-btn" class="primary-btn">Download PNG</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="lib/html2canvas.min.js"></script>
+    <script src="lib/marked.min.js"></script>
+    <script src="lib/diff.min.js"></script>
+    <script src="lib/js-yaml.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
