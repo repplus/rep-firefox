@@ -242,7 +242,8 @@ rep+ is best for quick testing, replaying, and experimenting — not full low-le
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=bscript/rep&type=date&legend=top-left)](https://www.star-history.com/#bscript/rep&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=repplus/rep-firefox&type=date)](https://www.star-history.com/#repplus/rep-firefox&type=date)
+
 
 ## Found a Bug or Issue?
 
